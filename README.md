@@ -63,3 +63,5 @@ JQL( Javascript Query Language  )
         
         var dataList01 = $jql( select01, { "age", 25 } );
         var dataList02 = $jql( function() {/* select * from B where amt > 10000 */} );
+        
+        console.log( dataList01 ); // [{ "name" : "홍길동", "age" : 28, "job" : "개발자" }]
