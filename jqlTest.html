@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<script type="text/javascript" src="jql.js"></script>
+	<script type="text/javascript">
+		window.onload = function() {
+			var A = [
+				{ name : "홍길동", age : 27, job : "백수"   },
+				{ name : "뚱딴지", age : 22, job : "대학생" },
+				{ name : "고순이", age : 30, job : "은행원" }
+			];
+			var B = [
+				{ userId : "hello123", password : "abc0909"  },
+				{ userId : "myLady"  , password : "love9191" }
+			];
+
+			$jql.store( "A", A, "B", B );
+
+			var dataList =
+				$jql( function() {/*
+					select substr( name, 2 ) as name,
+						   age || '세' as age,
+						   job
+					  from A
+					 where age > 25
+				  order by name,
+				           age desc
+				*/} );
+
+			console.log( dataList );
+		}
+	</script>
+</head>
+<body>
+	
+</body>
+</html>
