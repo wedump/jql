@@ -9,11 +9,57 @@ JQL( Javascript Query Language  )
 사용방법
 ========
 
-    var select01 = function() {/*
-    */};
-    var insert01 = function() {/*
-    */};
-    var update01 = function() {/*
-    */};
-    var delete01 = function() {/*
-    */};
+1. SQL 선언
+-----------
+
+* 커멘트 트릭을 사용하여 SQL을 작성합니다.
+* 대소문자를 구분하지 않고 분석 시 모두 소문자로 변환됩니다.
+* :변수명 으로 값을 동적할당 할 수 있습니다.
+
+        var select01 = function() {/*
+            select substr( name, 2 ) as name,
+                   age || '세' as age,
+                   job
+              from A
+             where age > :age
+          order by name,
+                   age desc
+        */};
+        
+        var insert01 = function() {/*
+            insert into A( name, age, job ) values( :name, :age, :job )
+        */};
+        
+        var update01 = function() {/*
+            update A set age = age + 1 where name = :name
+        */};
+        
+        var delete01 = function() {/*
+            delete from A where name = :name
+        */};
+    
+2. 테이블 저장
+--------------
+
+* jql 라이브러리의 사용은 $jql 객체를 통해 실현됩니다.
+* store함수를 사용하여 테이블을 저장할 수 있습니다.
+* store함수의 파라미터의 개수 제한이 없습니다.
+* store함수 파라미터의 홀수 인자는 SQL에서 사용할 테이블명을 나타내고, 짝수 인자는 테이블로 사용할 JSON 데이터 입니다.
+
+        var A = ajax(); // ajax를 통해 서버로 부터 JSON데이터를 받아옴( ajax()는 지원 X )
+        var B = ajax();
+        
+        $jql.store( "A", A, "B", B );
+
+3. SQL 실행
+-----------
+
+* $jql()을 통해 SQL을 실행 할 수 있습니다.
+* 파라미터의 첫번째 인자는 SQL함수이고, 두번째 인자는 Object이며 SQL에 동적변수를 할당하는 용도로 사용됩니다.
+* SELECT문의 리턴값은 JSON데이터 이고, INSERT, UPDATE, DELETE는 성공여부를 boolean으로 리턴합니다.
+
+        $jql( insert01, { "name" : "홍길동", "age" : 27, "job" : "개발자" } );
+        $jql( update01, { "name" : "홍길동" } );
+        
+        var dataList01 = $jql( select01, { "age", 25 } );
+        var dataList02 = $jql( function() {/* select * from B where amt > 10000 */} );
