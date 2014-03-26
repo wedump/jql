@@ -87,3 +87,25 @@ API 명세
           - $jql.util.indexOf : 파라미터로 넘겨준 명령어의 인덱스값을 제공
           
         $jql.store : 테이블 저장
+
+Minify 문제해결
+====================
+
+* 소스코드 minify를 할 경우 주석이 제거되어 SQL문장이 지워지는 문제가 있습니다.
+* 다음과 같이 각 minify Tool 별로 주석을 처리해야 합니다.
+
+        Uglify의 경우           /* -> /*@preserve
+        Closure Compiler의 경우 /* -> /*@preserve
+        YUI Compressor의 경우   /* -> /*!
+        
+        마지막으로 주석뒤에 숫자 0을 추가합니다.
+        
+        $jql( function() {/*@preserve
+                select * from A
+        */0} );
+        
+        또는
+        
+        $jql( function() {/*@!
+                select * from A
+        */0} );
