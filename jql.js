@@ -25,7 +25,7 @@ var $jql = ( function() {
 
 		for ( var index in table ) {
 			resultTable[ index ] = {};
-			
+
 			for ( var column in columnInfo )
 				resultTable[ index ][ column ] = $jql.parse.substitute( columnInfo[ column ], table[ index ] );
 		}
@@ -37,7 +37,7 @@ var $jql = ( function() {
 		sql : function( $function ) {
 			return $function.toString().replace( /^[^\*]+\*\s*/, "" ).replace( /\s*\*\/+[^]*/, "" ).toLowerCase(); // comment trick
 		},
-		
+
 		table : function( $sql ) {
 			return _storage[ $sql.replace( /[^]+(from)+(\s+)/, "" ).replace( /(\s+)+[^]*/, "" ) ];
 		},
