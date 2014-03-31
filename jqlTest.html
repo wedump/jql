@@ -22,7 +22,8 @@
 				$jql( function() {/*
 					select substr( name, 2 ) as name,
 						   age || '세' as age,
-						   job
+						   job,
+						   to_char( sysdate, 'yyyy.mm.dd' ) as dt
 					  from A
 					 where age > 25
 				  order by name,

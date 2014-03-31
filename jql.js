@@ -23,7 +23,7 @@ var $jql = ( function() {
 
 		$jql.table( table ).where( sql ).group( sql ).order( sql );
 
-		for ( var index in table ) {
+		for ( var index in table ) {			
 			resultTable[ index ] = {};
 
 			for ( var column in columnInfo )
@@ -96,6 +96,8 @@ var $jql = ( function() {
 		},
 
 		substitute : function( $columnInfo, $row ) {
+			$columnInfo = $columnInfo.replace( /sysdate/g, "'__date__'" ).replace( /systimestamp/g, "'__date__'" );
+
 			for ( var column in $row )
 				$columnInfo = $columnInfo.replace( new RegExp( column, [ "g" ] ), "'" + $row[ column ] + "'" );
 
@@ -105,6 +107,40 @@ var $jql = ( function() {
 		formula : function( $table ) {
 			function substr( $string, $startIndex, $unit ) {
 				return $string.substr( $startIndex - 1, $unit );
+			}
+			
+			function to_char( $date, $format ) {
+				if ( $date === "__date__" )
+					$date = new Date;
+				else
+					return "";
+
+		    	var result = $format.toLowerCase(),
+		    		year   = $date.getFullYear() + "",
+		    		month  = $date.getMonth() + 1 + "",
+		    		date   = $date.getDate() + "",
+		    		hours  = $date.getHours(),
+		    		zeroNotation = function( $str ) {
+		    			var str0 = "0" + $str;
+		    			return str0.substr( str0.length - 2 );
+		    		},
+		    		formatList = {
+		   				"dd"   : function() { return zeroNotation( date ); },
+		       			"d"	   : function() { return date; },
+		       			"hh24" : function() { return zeroNotation( hours ); },
+		    			"hh"   : function() { return hours === 12 ? "12" : zeroNotation( hours % 12 ); },
+		       			"mm"   : function() { return zeroNotation( month ); },
+		    			"mi"   : function() { return zeroNotation( $date.getMinutes() ); },
+		    			"m"    : function() { return month; },
+		    			"ss"   : function() { return zeroNotation( $date.getSeconds() ); },
+		    			"yyyy" : function() { return year; },
+		    			"yy"   : function() { return year.substr( year.length - 2 ); }
+		    		};
+		    		
+		    	for ( var format in formatList )
+		    		result = result.replace( format, formatList[ format ]() );
+		    		
+		    	return result;
 			}
 
 			var index = $table.length;
