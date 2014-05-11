@@ -18,19 +18,12 @@
 
 			$jql.store( "A", A, "B", B );
 
-			var dataList =
+			var result =
 				$jql( function() {/*
-					select substr( name, 2 ) as name,
-						   age || '세' as age,
-						   job,
-						   to_char( sysdate, 'yyyy.mm.dd' ) as dt
-					  from A
-					 where age > 25
-				  order by name,
-				           age desc
+					delete from A where name = '홍길동' or age > 27
 				*/} );
 
-			console.log( dataList );
+			console.log( result, A );
 		}
 	</script>
 </head>
