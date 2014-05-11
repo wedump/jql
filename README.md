@@ -56,7 +56,7 @@ JQL( Javascript Query Language  )
 
 * $jql()을 통해 SQL을 실행 할 수 있습니다.
 * 파라미터의 첫번째 인자는 SQL함수이고, 두번째 인자는 Object이며 SQL에 동적변수를 할당하는 용도로 사용됩니다.
-* SELECT문의 리턴값은 JSON데이터 이고, INSERT, UPDATE, DELETE는 성공여부를 boolean으로 리턴합니다.
+* SELECT문의 리턴값은 JSON데이터 이고, INSERT, UPDATE, DELETE는 처리된 데이터 개수를 Number로 리턴합니다.
 
         $jql( insert01, { "name" : "홍길동", "age" : 27, "job" : "개발자" } );
         $jql( update01, { "name" : "홍길동" } );
@@ -70,23 +70,7 @@ API 명세
 ========
 
         $jql : SQL문을 실행한다.
-        
-        $jql.parse : SQL문 파싱과 관련된 함수제공
-          - $jql.parse.sql : 커멘트 트릭으로 받아온 주석 문자열을 SQL문자열로 변경
-          - $jql.parse.table : SQL문장으로 부터 테이블을 추출
-          - $jql.parse.column : SQL문장으로 부터 컬럼정보를 분리
-          - $jql.parse.substitute : 컬럼정보에 테이블값을 대입
-          - $jql.parse.formula : 값이 대입된 컬럼정보를 파싱하여 최종 데이터를 생성
-          
-        $jql.table : 테이블 데이터를 조작하는 함수제공
-          - $jql.table.where : SQL문장의 WHERE조건절대로 테이블을 필터링
-          - $jql.table.group : SQL문장의 GROUP BY절대로 테이블을 그룹핑
-          - $jql.table.order : SQL문장의 ORDER BY절대로 테이블을 정렬
-          
-        $jql.util : 기타 유틸리티 함수제공
-          - $jql.util.indexOf : 파라미터로 넘겨준 명령어의 인덱스값을 제공
-          
-        $jql.store : 테이블 저장
+        $jql.store : 테이블 저장한다.
 
 Minify 문제해결
 ====================
