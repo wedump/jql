@@ -42,7 +42,7 @@ var $jql = ( function() {
           updateExcute : function( $sql ) {
 
           },
-          deleteExcute : function( $sql ) {              
+          deleteExcute : function( $sql ) {
                var tableName = $sql.replace( /\s*delete\s+from\s+|\s+where[^]*/g, "" );
                var where = $sql.replace( /[^]+where\s+/, "" );
                var table = _storage[ tableName ];
@@ -50,13 +50,13 @@ var $jql = ( function() {
                // alias 방법에 대한 설계 필요.( 따로 분리 )
                // var tableList = tableName.replace( /,/g, " " ).replace( /\s+/g, " " ).split( " " );
 
-               if ( table == null )
-                    throw new Error( "Not found table. -> " + tableName );
+               if ( !table ) throw new Error( "Not found table. -> " + tableName );
 
                return _where( table, where, deleteVisitor, null ).length;
           }
      };
 
+     // like, in, not in, is null, is not null, exists, not exists 처리 필요                    
      _where = function( $table, $where, $visitor, $customData ) {
           var result = [];
           var where  = $where.replace( /\s+and\s+/g, " && " ).replace( /\s+or\s+/g, " || " ).replace( /=/g, "==" );
@@ -66,8 +66,38 @@ var $jql = ( function() {
                var isExist = where;
 
                for ( var col in row ) {
-                    // 대입하는 정규표현식 다시 구상.( 제대로 안됨 )
-                    isExist = isExist.replace( new RegExp( "\\s*" + col + "\\s*", "g" ), " '" + row[ col ] + "' " );
+                    var whereList = isExist.replace( /'/g, ":'" ).split( ":" );
+                    var quoteFlag = false;
+                    
+                    for ( var j = 0; j < whereList.length; j++ ) {
+                         var item = whereList[ j ], itemList;
+
+                         if ( item.indexOf( "'" ) > -1 && !quoteFlag ) {
+                              quoteFlag = true;
+                              continue;
+                         }
+
+                         quoteFlag = false;
+                         itemList  = item.replace( new RegExp( col, "g" ), ":" + col + ":" ).split( ":" );
+
+                         for ( var k = 0; k < itemList.length; k++ ) {
+                              var subItem = itemList[ k ];
+                              var preSubItem  = itemList[ k - 1 ];
+                              var postSubItem = itemList[ k + 1 ];
+
+                              if ( subItem === col ) {
+                                   var preChar  = preSubItem.substr( preSubItem.length - 1, preSubItem.length );
+                                   var postChar = postSubItem.substr( 0, 1 );
+
+                                   if ( ( /\W/.test( preChar ) || !preChar ) && ( /\W/.test( postChar ) || !postChar ) )
+                                        itemList[ k ] = "'" + row[ col ] + "'";
+                              }
+                         }
+
+                         whereList[ j ] = itemList.join( "" );
+                    }
+
+                    isExist = whereList.join( "" );
                }
 
                if ( eval( isExist ) ) {
