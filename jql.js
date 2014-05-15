@@ -3,7 +3,7 @@ var $jql = ( function() {
 
      var _createSql, _player, _where, _utils, _storage = {};
 
-     // argumets type : function, {}
+     // argumets type : ( function, {} )
      function $jql( $sqlFunction, $parameter ) {
           var sql = _createSql( $sqlFunction, $parameter );
           var paragraph = sql.split( " " )[ 0 ]; // select, insert, update, delete, etc..
@@ -65,7 +65,7 @@ var $jql = ( function() {
      };
 
      // * like, in, not in, is null, is not null, exists, not exists 처리 필요
-     // * '''' 이스케이프 처리
+     // * 함수, Case문, 이스케이프( '''' ) 등 공통적으로 빼서 결합해야 함.
      _where = function( $table, $where, $visitor, $customData ) {
           var result = [];
           var where  = $where.replace( /\s+and\s+/g, " && " ).replace( /\s+or\s+/g, " || " ).replace( /=/g, "==" );
