@@ -28,6 +28,24 @@ var $jql = ( function() {
                     for ( var i = 0; i < $roof.length; i++ )
                          $nextFunction.apply( $excuteContext, [ i, $roof ] );
                }
+          },
+          getObjectLength : function( $object ) {
+               var count = 0;
+
+               for ( var item in $object )
+                    count++;
+
+               return count;
+          },
+          getColumnIndex : function( $object, $column ) {
+               var index = -1;
+
+               for ( var column in $object ) {
+                    index++;
+                    if ( column === $column ) return index;
+               }
+
+               return index;
           }
      };
 
@@ -54,9 +72,6 @@ var $jql = ( function() {
                var tableName = $sql.replace( /\s*delete\s+from\s+|\s+where[^]*/g, "" );
                var where = $sql.replace( /[^]+where\s+/, "" );
                var table = _storage[ tableName ];
-               
-               // * alias 방법에 대한 설계 필요.( 따로 분리 )
-               // * var tableList = tableName.replace( /,/g, " " ).replace( /\s+/g, " " ).split( " " );
 
                if ( !table ) throw new Error( "Not found table. -> " + tableName );
 
@@ -64,15 +79,12 @@ var $jql = ( function() {
           }
      };
 
-     // * like, in, not in, is null, is not null, exists, not exists 처리 필요
-     // * 함수, Case문, 이스케이프( '''' ) 등 공통적으로 빼서 결합해야 함.
      _where = function( $table, $where, $visitor, $customData ) {
           var result = [];
-          var where  = $where.replace( /\s+and\s+/g, " && " ).replace( /\s+or\s+/g, " || " ).replace( /=/g, "==" );
 
           var tableIterator = function( $index, $parent ) {
                this.row = $parent[ $index ];
-               this.isExist = where;
+               this.isExist = $where;
 
                this.foreach( this.row, rowIterator, true );
 
@@ -82,7 +94,7 @@ var $jql = ( function() {
                }
           };
           var rowIterator = function( $key, $parent ) {
-               this.whereList = this.isExist.replace( /'/g, ":'" ).split( ":" );
+               this.whereList = this.isExist.replace( /'/g, ":'" ).split( ":" ); // 문자열 내부의 문자를 제외하고 컬럼을 대입하기 위함.
                this.quoteFlag = false;
                this.col = $key;
 
@@ -97,8 +109,12 @@ var $jql = ( function() {
                if ( this.item.indexOf( "'" ) > -1 && !this.quoteFlag ) {
                     this.quoteFlag = true;
                } else {
+                    // 마지막에 한번만 교체 되어야 하는 문자 처리
+                    if ( _utils.getObjectLength( this.row ) - 1 === _utils.getColumnIndex( this.row, this.col ) )
+                         this.item = this.item.replace( /\s+and\s+/g, " && " ).replace( /\s+or\s+/g, " || " ).replace( /=/g, "==" );
+
                     this.quoteFlag = false;
-                    this.itemList  = this.item.replace( new RegExp( this.col, "g" ), ":" + this.col + ":" ).split( ":" );
+                    this.itemList  = this.item.replace( new RegExp( this.col, "g" ), ":" + this.col + ":" ).split( ":" ); // 컬럼 문자의 앞뒤 문자를 확인 위함.
 
                     this.foreach( this.itemList, this.lastFunction );
 
@@ -115,6 +131,7 @@ var $jql = ( function() {
                     var preChar  = preSubItem.substr( preSubItem.length - 1, preSubItem.length );
                     var postChar = postSubItem.substr( 0, 1 );
 
+                    // 컬럼 문자의 앞뒤 문자가 영문자 또는 숫자가 아니어야 컬럼 문자가 포함된 문자열에 속지 않음.
                     if ( ( /\W/.test( preChar ) || !preChar ) && ( /\W/.test( postChar ) || !postChar ) )
                          $parent[ $index ] = "'" + this.row[ this.col ] + "'";
                }
@@ -127,7 +144,7 @@ var $jql = ( function() {
           this.lastFunction = $lastFunction;
      }
 
-     Iterator.prototype.foreach = function( $roof, $nextFunction, $keyFlag ) {
+     Iterator.prototype.foreach = function( $roof, $nextFunction, $keyFlag ) {          
           _utils.foreach( $roof, $nextFunction, this, $keyFlag );
      };
 
