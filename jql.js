@@ -114,18 +114,19 @@ var $jql = ( function() {
                          $visitor( $table, $index, $customData );
                     }
                };
+               
                var rowIterator = function( $key, $parent ) {
                     this.whereList = this.isExist.replace( /'/g, ":'" ).split( ":" ); // 문자열 내부의 문자를 제외하고 컬럼을 대입하기 위함.
                     this.quoteFlag = false;
                     this.col = $key;
 
-                    this.foreach( this.whereList, whereIterator );
+                    this.foreach( this.whereList, this.lastFunction );
 
                     this.isExist = this.whereList.join( "" );
                };
-               var whereIterator = function( $index, $parent ) {
+
+               _utils.foreach( $table, tableIterator, new Iterator( function( $index, $parent ) {
                     this.item = $parent[ $index ];
-                    this.itemList;
 
                     if ( this.item.indexOf( "'" ) > -1 && !this.quoteFlag ) {
                          this.quoteFlag = true;
@@ -135,26 +136,8 @@ var $jql = ( function() {
                               this.item = this.item.replace( /\s+and\s+/g, " && " ).replace( /\s+or\s+/g, " || " ).replace( /=/g, "==" );
 
                          this.quoteFlag = false;
-                         this.itemList  = this.item.replace( new RegExp( this.col, "g" ), ":" + this.col + ":" ).split( ":" ); // 컬럼 문자의 앞뒤 문자를 확인 위함.
 
-                         this.foreach( this.itemList, this.lastFunction );
-
-                         $parent[ $index ] = this.itemList.join( "" );
-                    }
-               };
-
-               _utils.foreach( $table, tableIterator, new Iterator( function( $index, $parent ) {
-                    var subItem = $parent[ $index ];
-                    var preSubItem  = $parent[ $index - 1 ];
-                    var postSubItem = $parent[ $index + 1 ];
-
-                    if ( subItem === this.col ) {
-                         var preChar  = preSubItem.substr( preSubItem.length - 1, preSubItem.length );
-                         var postChar = postSubItem.substr( 0, 1 );
-
-                         // 컬럼 문자의 앞뒤 문자가 영문자 또는 숫자가 아니어야 컬럼 문자가 포함된 문자열에 속지 않음.
-                         if ( ( /\W/.test( preChar ) || !preChar ) && ( /\W/.test( postChar ) || !postChar ) )
-                              $parent[ $index ] = "'" + this.row[ this.col ] + "'";
+                         $parent[ $index ] = _utils.replacePureWord( this.item, this.col, ":" ).replace( new RegExp( ":" + this.col + ":", "g" ), "'" + this.row[ this.col ] + "'" );
                     }
                } ) );
 
